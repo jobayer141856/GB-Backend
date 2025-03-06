@@ -28,10 +28,10 @@ export const insertSchema = createInsertSchema(
   {
     uuid: schema => schema.uuid.length(21),
     name: schema => schema.name.min(1).max(255),
-    office: schema => schema.office.min(1).max(255),
+    address: schema => schema.address.min(1).max(255).optional(),
     email: schema => schema.email.min(1),
     phone: schema => schema.phone.min(1).max(50).optional(),
-    // pass: schema => schema.pass.min(4).max(50),
+    pass: schema => schema.pass.min(4).max(50),
     created_at: schema => schema.created_at.regex(dateTimePattern, {
       message: 'created_at must be in the format "YYYY-MM-DD HH:MM:SS"',
     }),
@@ -42,14 +42,13 @@ export const insertSchema = createInsertSchema(
 ).required({
   uuid: true,
   name: true,
-  office: true,
   email: true,
-  // pass: true,
+  pass: true,
   created_at: true,
 }).partial({
   phone: true,
-  image: true,
-  // status: true,
+  address: true,
+  status: true,
   // can_access: true,
   updated_at: true,
   remarks: true,

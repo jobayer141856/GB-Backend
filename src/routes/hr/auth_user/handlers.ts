@@ -14,7 +14,6 @@ import type {
   GetOneRoute,
   ListRoute,
   PatchCanAccessRoute,
-  PatchChangePasswordRoute,
   PatchRoute,
   PatchStatusRoute,
   RemoveRoute,
@@ -36,16 +35,18 @@ export const signin: AppRouteHandler<SigninRoute> = async (c: any) => {
     uuid: auth_user.uuid,
     user_uuid: auth_user.user_uuid,
     email: users.email,
-    pass: auth_user.pass,
+    pass: users.pass,
     can_access: auth_user.can_access,
     status: auth_user.status,
     created_at: auth_user.created_at,
     updated_at: auth_user.updated_at,
     remarks: auth_user.remarks,
     name: users.name,
+    phone: users.phone,
+    gender: users.gender,
   })
-    .from(auth_user)
-    .leftJoin(users, eq(auth_user.user_uuid, users.uuid))
+    .from(users)
+    .leftJoin(auth_user, eq(auth_user.user_uuid, users.uuid))
     .where(eq(users.email, email));
 
   const [data] = await resultPromise;
@@ -144,17 +145,17 @@ export const list: AppRouteHandler<ListRoute> = async (c: any) => {
   const resultPromise = db.select({
     uuid: auth_user.uuid,
     user_uuid: auth_user.user_uuid,
-    pass: auth_user.pass,
+    pass: users.pass,
     can_access: auth_user.can_access,
     status: auth_user.status,
     created_at: auth_user.created_at,
     updated_at: auth_user.updated_at,
     remarks: auth_user.remarks,
     name: users.name,
-    image: users.image,
+    gender: users.gender,
     email: users.email,
     phone: users.phone,
-    office: users.office,
+    address: users.address,
   })
     .from(auth_user)
     .leftJoin(users, eq(auth_user.user_uuid, users.uuid));
@@ -170,17 +171,17 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
   const resultPromise = db.select({
     uuid: auth_user.uuid,
     user_uuid: auth_user.user_uuid,
-    pass: auth_user.pass,
+    pass: users.pass,
     can_access: auth_user.can_access,
     status: auth_user.status,
     created_at: auth_user.created_at,
     updated_at: auth_user.updated_at,
     remarks: auth_user.remarks,
     name: users.name,
-    image: users.image,
+    gender: users.gender,
     email: users.email,
     phone: users.phone,
-    office: users.office,
+    address: users.address,
   })
     .from(auth_user)
     .leftJoin(users, eq(auth_user.user_uuid, users.uuid))
@@ -238,31 +239,6 @@ export const patchStatus: AppRouteHandler<PatchStatusRoute> = async (c: any) => 
     .where(eq(auth_user.uuid, uuid))
     .returning({
       name: auth_user.uuid,
-    });
-
-  if (!data)
-    return DataNotFound(c);
-
-  return c.json(createToast('update', data.name), HSCode.OK);
-};
-
-export const patchChangePassword: AppRouteHandler<PatchChangePasswordRoute> = async (c: any) => {
-  const { uuid } = c.req.valid('param');
-  const { pass, updated_at } = await c.req.json();
-
-  // if (Object.keys(updates).length === 0)
-  //   return ObjectNotFound(c);
-
-  const pass2 = await HashPass(pass);
-
-  const [data] = await db.update(auth_user)
-    .set({
-      pass: pass2,
-      updated_at,
-    })
-    .where(eq(auth_user.uuid, uuid))
-    .returning({
-      name: auth_user.user_uuid,
     });
 
   if (!data)

@@ -26,15 +26,10 @@ export const create = createRoute({
   path: '/hr/users',
   method: 'post',
   request: {
-    body: {
-      content: {
-        'multipart/form-data': {
-          schema: {
-            ...insertSchema,
-          },
-        },
-      },
-    },
+    body: jsonContentRequired(
+      insertSchema,
+      'The program to create',
+    ),
   },
   tags,
   responses: {
@@ -153,6 +148,22 @@ export const remove = createRoute({
   },
 });
 
+export const patchChangePassword = createRoute({
+  path: '/hr/users/password/{uuid}',
+  method: 'patch',
+  tags,
+  request: {
+    params: param.uuid,
+  },
+  responses: {
+    [HSCode.OK]: jsonContent(
+      z.array(selectSchema),
+      'The change pass of user',
+    ),
+  },
+
+});
+
 // export const signout = createRoute({
 //   path: '/signout/{uuid}',
 //   method: 'delete',
@@ -228,6 +239,7 @@ export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
+export type PatchChangePasswordRoute = typeof patchChangePassword;
 // export type SignoutRoute = typeof signout;
 // export type GetCanAccessRoute = typeof getCanAccess;
 // export type PatchCanAccessRoute = typeof patchCanAccess;
