@@ -31,11 +31,16 @@ export const create = createRoute({
   path: '/portfolio/product-sub-category',
   method: 'post',
   request: {
-    body: jsonContentRequired(
-      insertSchema,
-      'The product_sub_category to create',
-    ),
-  },
+        body: {
+          content: {
+            'multipart/form-data': {
+              schema: {
+                ...insertSchema,
+              },
+            },
+          },
+        },
+      },
   tags,
   responses: {
     [HSCode.OK]: jsonContent(
