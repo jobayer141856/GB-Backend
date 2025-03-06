@@ -23,7 +23,7 @@ export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
 
   const image = formData.image;
 
-  const imagePath = await insertFile(image, 'public/product_category');
+  const imagePath = await insertFile(image, 'public/product-category');
 
   const value = {
     id: formData.id,
@@ -59,11 +59,11 @@ export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
     });
 
     if (productCategoryData && productCategoryData.image) {
-      const imagePath = await updateFile(formData.file, productCategoryData.image, 'public/product_category');
+      const imagePath = await updateFile(formData.file, productCategoryData.image, 'public/product-category');
       formData.image = imagePath;
     }
     else {
-      const imagePath = await insertFile(formData.image, 'public/product_category');
+      const imagePath = await insertFile(formData.image, 'public/product-category');
       formData.image = imagePath;
     }
   }
