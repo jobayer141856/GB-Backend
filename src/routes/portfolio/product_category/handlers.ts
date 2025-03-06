@@ -1,5 +1,3 @@
-
-
 import type { AppRouteHandler } from '@/lib/types';
 
 import { eq } from 'drizzle-orm';
@@ -10,6 +8,7 @@ import db from '@/db';
 import * as hrSchema from '@/routes/hr/schema';
 import { createToast, DataNotFound, ObjectNotFound } from '@/utils/return';
 import { deleteFile, insertFile, updateFile } from '@/utils/upload_file';
+
 import type { CreateRoute, GetOneRoute, ListRoute, PatchRoute, RemoveRoute } from './routes';
 
 import { product_category } from '../schema';
@@ -17,7 +16,7 @@ import { product_category } from '../schema';
 // const created_user = alias(hrSchema.users, 'created_user');
 
 export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
-  //const value = c.req.valid('json');
+  // const value = c.req.valid('json');
 
   const formData = await c.req.parseBody();
 
@@ -88,17 +87,16 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
 
   // get info image name
-  
-    const productCategoryData = await db.query.product_category.findFirst({
-      where(fields, operators) {
-        return operators.eq(fields.uuid, uuid);
-      },
-    });
-  
-    if (productCategoryData && productCategoryData.image) {
-      deleteFile(productCategoryData.image);
-    }
-  
+
+  const productCategoryData = await db.query.product_category.findFirst({
+    where(fields, operators) {
+      return operators.eq(fields.uuid, uuid);
+    },
+  });
+
+  if (productCategoryData && productCategoryData.image) {
+    deleteFile(productCategoryData.image);
+  }
 
   const [data] = await db.delete(product_category)
     .where(eq(product_category.uuid, uuid))

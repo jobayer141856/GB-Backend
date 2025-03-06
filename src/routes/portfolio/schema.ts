@@ -154,6 +154,57 @@ export const promo_banner_product = portfolio.table('promo_banner_product', {
   remarks: text('remarks'),
 });
 
+// * order
+
+export const order_id = portfolio.sequence('order_id', DEFAULT_SEQUENCE);
+export const order_status = portfolio.enum('order_status', [
+  'accept',
+  'reject',
+  'pending',
+]);
+
+export const order = portfolio.table('order', {
+  id: integer('id').default(sql`nextval('portfolio.order_id')`),
+  uuid: uuid_primary,
+  user_uuid: defaultUUID('user_uuid').references(() => users.uuid, DEFAULT_OPERATION),
+  delivery_address: text('delivery_address').notNull(),
+  payment_method: text('payment_method').notNull(),
+  status: order_status('status').default('pending'),
+  is_delivered: boolean('is_delivered').default(false),
+  created_by: defaultUUID('created_by').references(() => users.uuid, DEFAULT_OPERATION),
+  created_at: DateTime('created_at').notNull(),
+  updated_at: DateTime('updated_at'),
+  remarks: text('remarks'),
+});
+
+// * order product
+export const order_product = portfolio.table('order_product', {
+  uuid: uuid_primary,
+  order_uuid: defaultUUID('order_uuid').references(() => order.uuid, DEFAULT_OPERATION),
+  product_uuid: defaultUUID('product_uuid').references(() => product.uuid, DEFAULT_OPERATION),
+  quantity: integer('quantity').notNull(),
+  is_vatable: boolean('is_vatable').default(false),
+  price: PG_DECIMAL('price').notNull(),
+  created_at: DateTime('created_at').notNull(),
+  updated_at: DateTime('updated_at'),
+  remarks: text('remarks'),
+});
+
+// * contact us
+
+export const contact_us_id = portfolio.sequence('contact_us_id', DEFAULT_SEQUENCE);
+
+export const contact_us = portfolio.table('contact_us', {
+  id: integer('id').default(sql`nextval('portfolio.contact_us_id')`),
+  name: text('name').notNull(),
+  email: text('email').notNull(),
+  phone: text('phone').notNull(),
+  message: text('message').notNull(),
+  created_at: DateTime('created_at').notNull(),
+  updated_at: DateTime('updated_at'),
+  remarks: text('remarks'),
+});
+
 //* relations *//
 
 export const portfolio_testimonial_rel = relations(testimonial, ({ one }) => ({
@@ -262,6 +313,21 @@ export const portfolio_promo_banner_product_rel = relations(promo_banner_product
 
   created_by: one(users, {
     fields: [promo_banner_product.created_by],
+    references: [users.uuid],
+  }),
+}));
+
+export const portfolio_order_rel = relations(order, ({ one }) => ({
+  user_uuid: one(users, {
+    fields: [order.user_uuid],
+    references: [users.uuid],
+  }),
+  order_product: one(order_product, {
+    fields: [order.uuid],
+    references: [order_product.order_uuid],
+  }),
+  created_by: one(users, {
+    fields: [order.created_by],
     references: [users.uuid],
   }),
 }));
