@@ -11,10 +11,10 @@ export const insertSchema = createInsertSchema(
   contact_us,
   {
     id: schema => schema.id,
-    name: schema => schema.name.length(255),
-    email: schema => schema.email.length(255),
-    phone: schema => schema.phone.length(255),
-    message: schema => schema.message.length(255),
+    name: schema => schema.name.min(1),
+    email: schema => schema.email.min(1),
+    phone: schema => schema.phone.min(1),
+    message: schema => schema.message.min(1),
     created_at: schema => schema.created_at.regex(dateTimePattern, {
       message: 'created_at must be in the format "YYYY-MM-DD HH:MM:SS"',
     }),

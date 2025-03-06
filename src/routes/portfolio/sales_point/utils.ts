@@ -2,21 +2,22 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 
 import { dateTimePattern } from '@/utils';
 
-import { order, order_status } from '../schema';
+import { sales_point } from '../schema';
 
 //* crud
-export const selectSchema = createSelectSchema(order);
+export const selectSchema = createSelectSchema(sales_point);
 
 export const insertSchema = createInsertSchema(
-  order,
+  sales_point,
   {
     uuid: schema => schema.uuid.length(21),
-    delivery_address: schema => schema.delivery_address.min(1),
-    payment_method: schema => schema.payment_method.min(1),
-    status: schema => schema.status.refine(value => order_status(value), {
-      message: 'Invalid status',
-    }),
-    user_uuid: schema => schema.user_uuid.length(21),
+    shop_uuid: schema => schema.shop_uuid.length(21),
+    name: schema => schema.name.min(1),
+    phone: schema => schema.phone.min(1),
+    details: schema => schema.details.min(1),
+    latitude: schema => schema.latitude.min(1),
+    longitude: schema => schema.longitude.min(1),
+    address: schema => schema.address.min(1),
     created_at: schema => schema.created_at.regex(dateTimePattern, {
       message: 'created_at must be in the format "YYYY-MM-DD HH:MM:SS"',
     }),
@@ -26,13 +27,15 @@ export const insertSchema = createInsertSchema(
   },
 ).required({
   uuid: true,
-  user_uuid: true,
-  delivery_address: true,
-  payment_method: true,
+  shop_uuid: true,
+  name: true,
+  phone: true,
+  details: true,
+  latitude: true,
+  longitude: true,
+  address: true,
   created_by: true,
 }).partial({
-  status: true,
-  is_delivered: true,
   updated_at: true,
   remarks: true,
 }).omit({
