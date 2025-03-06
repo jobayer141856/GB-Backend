@@ -1,3 +1,4 @@
+
 import type { AppRouteHandler } from '@/lib/types';
 
 import { eq } from 'drizzle-orm';
@@ -7,6 +8,7 @@ import * as HSCode from 'stoker/http-status-codes';
 import db from '@/db';
 import * as hrSchema from '@/routes/hr/schema';
 import { createToast, DataNotFound, ObjectNotFound } from '@/utils/return';
+import { deleteFile, insertFile, updateFile } from '@/utils/upload_file';
 
 import type { CreateRoute, GetOneRoute, ListRoute, PatchRoute, RemoveRoute } from './routes';
 
@@ -15,7 +17,35 @@ import { product, product_sub_category } from '../schema';
 // const created_user = alias(hrSchema.users, 'created_user');
 
 export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
-  const value = c.req.valid('json');
+  //const value = c.req.valid('json');
+
+  const formData = await c.req.parseBody();
+
+  const image = formData.image;
+
+  const imagePath = await insertFile(image, 'public/product');
+
+  const value = {
+    id: formData.id,
+    uuid: formData.uuid,
+    product_sub_category_uuid: formData.product_sub_category,
+    name: formData.name,
+    image: imagePath,
+    quantity: formData.quantity,
+    unit: formData.unit,
+    price: formData.price,
+    description: formData.description,
+    nutrition: formData.nutrition,
+    is_published: formData.is_published,
+    is_vatable: formData.is_vatable,
+    is_featured: formData.is_featured,
+    is_popular: formData.is_popular,
+    is_variable_weight: formData.is_variable_weight,
+    created_by: formData.created_by,
+    created_at: formData.created_at,
+    updated_at: formData.updated_at,
+    remarks: formData.remarks,
+  };
 
   const [data] = await db.insert(product).values(value).returning({
     name: product.name,
@@ -26,13 +56,32 @@ export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
 
 export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
-  const updates = c.req.valid('json');
+  const formData = await c.req.parseBody();
 
-  if (Object.keys(updates).length === 0)
+  // updates includes image then do it else exclude it
+  if (formData.image) {
+    // get info image name
+    const productData = await db.query.product.findFirst({
+      where(fields, operators) {
+        return operators.eq(fields.uuid, uuid);
+      },
+    });
+
+    if (productData && productData.image) {
+      const imagePath = await updateFile(formData.file, productData.image, 'public/product');
+      formData.image = imagePath;
+    }
+    else {
+      const imagePath = await insertFile(formData.image, 'public/product');
+      formData.image = imagePath;
+    }
+  }
+
+  if (Object.keys(formData).length === 0)
     return ObjectNotFound(c);
 
   const [data] = await db.update(product)
-    .set(updates)
+    .set(formData)
     .where(eq(product.uuid, uuid))
     .returning({
       name: product.name,
@@ -46,6 +95,18 @@ export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
+
+    // get info image name
+
+    const productData = await db.query.product.findFirst({
+      where(fields, operators) {
+        return operators.eq(fields.uuid, uuid);
+      },
+    });
+  
+    if (productData && productData.image) {
+      deleteFile(productData.image);
+    }
 
   const [data] = await db.delete(product)
     .where(eq(product.uuid, uuid))

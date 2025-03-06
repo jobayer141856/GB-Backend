@@ -9,13 +9,32 @@ import * as hrSchema from '@/routes/hr/schema';
 import { createToast, DataNotFound, ObjectNotFound } from '@/utils/return';
 
 import type { CreateRoute, GetOneRoute, ListRoute, PatchRoute, RemoveRoute } from './routes';
-
+import { deleteFile, insertFile, updateFile } from '@/utils/upload_file';
 import { product_category, product_sub_category } from '../schema';
 
 // const created_user = alias(hrSchema.users, 'created_user');
 
 export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
-  const value = c.req.valid('json');
+  //const value = c.req.valid('json');
+
+  const formData = await c.req.parseBody();
+
+  const image = formData.image;
+
+  const imagePath = await insertFile(image, 'public/product-sub-category');
+
+  const value = {
+    id: formData.id,
+    uuid: formData.uuid,
+    product_category_uuid: formData.product_category_uuid,
+    name: formData.name,
+    image: imagePath,
+    status: formData.status,
+    created_by: formData.created_by,
+    created_at: formData.created_at,
+    updated_at: formData.updated_at,
+    remarks: formData.remarks,
+  };
 
   const [data] = await db.insert(product_sub_category).values(value).returning({
     name: product_sub_category.name,
@@ -26,13 +45,32 @@ export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
 
 export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
-  const updates = c.req.valid('json');
+ const formData = await c.req.parseBody();
 
-  if (Object.keys(updates).length === 0)
+  // updates includes image then do it else exclude it
+  if (formData.image) {
+    // get info image name
+    const productSubCategoryData = await db.query.product_sub_category.findFirst({
+      where(fields, operators) {
+        return operators.eq(fields.uuid, uuid);
+      },
+    });
+
+    if (productSubCategoryData && productSubCategoryData.image) {
+      const imagePath = await updateFile(formData.file, productSubCategoryData.image, 'public/product-sub-category');
+      formData.image = imagePath;
+    }
+    else {
+      const imagePath = await insertFile(formData.image, 'public/product-sub-category');
+      formData.image = imagePath;
+    }
+  }
+
+  if (Object.keys(formData).length === 0)
     return ObjectNotFound(c);
 
   const [data] = await db.update(product_sub_category)
-    .set(updates)
+    .set(formData)
     .where(eq(product_sub_category.uuid, uuid))
     .returning({
       name: product_sub_category.name,
@@ -46,6 +84,18 @@ export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
+
+  // get info image name
+  
+    const productSubCategoryData = await db.query.product_sub_category.findFirst({
+      where(fields, operators) {
+        return operators.eq(fields.uuid, uuid);
+      },
+    });
+  
+    if (productSubCategoryData && productSubCategoryData.image) {
+      deleteFile(productSubCategoryData.image);
+    }
 
   const [data] = await db.delete(product_sub_category)
     .where(eq(product_sub_category.uuid, uuid))
