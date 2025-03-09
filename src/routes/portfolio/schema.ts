@@ -317,18 +317,27 @@ export const portfolio_promo_banner_product_rel = relations(promo_banner_product
   }),
 }));
 
-export const portfolio_order_rel = relations(order, ({ one }) => ({
+export const portfolio_order_rel = relations(order, ({ one, many }) => ({
   user_uuid: one(users, {
     fields: [order.user_uuid],
     references: [users.uuid],
   }),
-  order_product: one(order_product, {
-    fields: [order.uuid],
-    references: [order_product.order_uuid],
-  }),
+  order_product: many(order_product),
   created_by: one(users, {
     fields: [order.created_by],
     references: [users.uuid],
+  }),
+}));
+
+export const portfolio_order_product_rel = relations(order_product, ({ one }) => ({
+  order_uuid: one(order, {
+    fields: [order_product.order_uuid],
+    references: [order.uuid],
+  }),
+
+  product_uuid: one(product, {
+    fields: [order_product.product_uuid],
+    references: [product.uuid],
   }),
 }));
 
