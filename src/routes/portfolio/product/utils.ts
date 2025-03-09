@@ -1,10 +1,9 @@
-import { desc } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { z } from 'zod';
 
 import { dateTimePattern } from '@/utils';
 
 import { product } from '../schema';
-
 //* crud
 export const selectSchema = createSelectSchema(product);
 
@@ -13,6 +12,8 @@ export const insertSchema = createInsertSchema(
   {
     uuid: schema => schema.uuid.length(21),
     product_sub_category_uuid: schema => schema.product_sub_category_uuid.length(21),
+    quantity: z.number().int().positive(),
+    price: z.number().positive(),
     created_by: schema => schema.created_by.length(21),
     created_at: schema => schema.created_at.regex(dateTimePattern, {
       message: 'created_at must be in the format "YYYY-MM-DD HH:MM:SS"',
