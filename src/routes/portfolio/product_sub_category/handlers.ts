@@ -7,15 +7,16 @@ import * as HSCode from 'stoker/http-status-codes';
 import db from '@/db';
 import * as hrSchema from '@/routes/hr/schema';
 import { createToast, DataNotFound, ObjectNotFound } from '@/utils/return';
+import { deleteFile, insertFile, updateFile } from '@/utils/upload_file';
 
 import type { CreateRoute, GetOneRoute, ListRoute, PatchRoute, RemoveRoute } from './routes';
-import { deleteFile, insertFile, updateFile } from '@/utils/upload_file';
+
 import { product_category, product_sub_category } from '../schema';
 
 // const created_user = alias(hrSchema.users, 'created_user');
 
 export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
-  //const value = c.req.valid('json');
+  // const value = c.req.valid('json');
 
   const formData = await c.req.parseBody();
 
@@ -45,7 +46,7 @@ export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
 
 export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
- const formData = await c.req.parseBody();
+  const formData = await c.req.parseBody();
 
   // updates includes image then do it else exclude it
   if (formData.image) {
@@ -86,16 +87,16 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
 
   // get info image name
-  
-    const productSubCategoryData = await db.query.product_sub_category.findFirst({
-      where(fields, operators) {
-        return operators.eq(fields.uuid, uuid);
-      },
-    });
-  
-    if (productSubCategoryData && productSubCategoryData.image) {
-      deleteFile(productSubCategoryData.image);
-    }
+
+  const productSubCategoryData = await db.query.product_sub_category.findFirst({
+    where(fields, operators) {
+      return operators.eq(fields.uuid, uuid);
+    },
+  });
+
+  if (productSubCategoryData && productSubCategoryData.image) {
+    deleteFile(productSubCategoryData.image);
+  }
 
   const [data] = await db.delete(product_sub_category)
     .where(eq(product_sub_category.uuid, uuid))

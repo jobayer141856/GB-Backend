@@ -1,4 +1,3 @@
-
 import type { AppRouteHandler } from '@/lib/types';
 
 import { eq } from 'drizzle-orm';
@@ -17,7 +16,7 @@ import { product, product_sub_category } from '../schema';
 // const created_user = alias(hrSchema.users, 'created_user');
 
 export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
-  //const value = c.req.valid('json');
+  // const value = c.req.valid('json');
 
   const formData = await c.req.parseBody();
 
@@ -96,17 +95,17 @@ export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
 export const remove: AppRouteHandler<RemoveRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
 
-    // get info image name
+  // get info image name
 
-    const productData = await db.query.product.findFirst({
-      where(fields, operators) {
-        return operators.eq(fields.uuid, uuid);
-      },
-    });
-  
-    if (productData && productData.image) {
-      deleteFile(productData.image);
-    }
+  const productData = await db.query.product.findFirst({
+    where(fields, operators) {
+      return operators.eq(fields.uuid, uuid);
+    },
+  });
+
+  if (productData && productData.image) {
+    deleteFile(productData.image);
+  }
 
   const [data] = await db.delete(product)
     .where(eq(product.uuid, uuid))
