@@ -138,25 +138,14 @@ export const list: AppRouteHandler<ListRoute> = async (c: any) => {
 export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
 
-  const resultPromise = db.select({
-    uuid: promo_banner.uuid,
-    name: promo_banner.name,
-    image: promo_banner.image,
-    discount_type: promo_banner.discount_type,
-    discount: promo_banner.discount,
-    start_datetime: promo_banner.start_datetime,
-    end_datetime: promo_banner.end_datetime,
-    created_at: promo_banner.created_at,
-    updated_at: promo_banner.updated_at,
-    remarks: promo_banner.remarks,
-    created_by: promo_banner.created_by,
-    created_by_name: hrSchema.users.name,
-  })
-    .from(promo_banner)
-    .leftJoin(hrSchema.users, eq(promo_banner.created_by, hrSchema.users.uuid))
-    .where(eq(promo_banner.uuid, uuid));
-
-  const [data] = await resultPromise;
+  const data = await db.query.promo_banner.findFirst({
+    where(fields, operators) {
+      return operators.eq(fields.uuid, uuid);
+    },
+    with: {
+      promo_banner_product: true,
+    },
+  });
 
   if (!data)
     return DataNotFound(c);

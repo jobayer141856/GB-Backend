@@ -293,14 +293,19 @@ export const portfolio_recipe_rel = relations(recipe, ({ one }) => ({
   }),
 }));
 
-export const portfolio_promo_banner_rel = relations(promo_banner, ({ one }) => ({
+export const portfolio_promo_banner_rel = relations(promo_banner, ({ one, many }) => ({
+
+  promo_banner_product: many(promo_banner_product),
+
   created_by: one(users, {
     fields: [promo_banner.created_by],
     references: [users.uuid],
   }),
+
 }));
 
 export const portfolio_promo_banner_product_rel = relations(promo_banner_product, ({ one }) => ({
+
   promo_banner_uuid: one(promo_banner, {
     fields: [promo_banner_product.promo_banner_uuid],
     references: [promo_banner.uuid],
