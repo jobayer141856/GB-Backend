@@ -28,7 +28,7 @@ export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
   const value = {
     id: formData.id,
     uuid: formData.uuid,
-    product_sub_category_uuid: formData.product_sub_category,
+    product_sub_category_uuid: formData.product_sub_category_uuid,
     name: formData.name,
     image: imagePath,
     quantity: formData.quantity,
