@@ -7,6 +7,7 @@ import product_sub_category from './product_sub_category';
 import promo_banner from './promo_banner';
 import promo_banner_product from './promo_banner_product';
 import recipe from './recipe';
+import sales_point from './sales_point';
 import shop from './shop';
 import testimonial from './testimonial';
 
@@ -22,4 +23,5 @@ export default [
   recipe,
   promo_banner,
   promo_banner_product,
+  sales_point,
 ];
