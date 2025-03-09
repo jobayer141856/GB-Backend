@@ -28,7 +28,6 @@ export const insertSchema = createInsertSchema(
   {
     uuid: schema => schema.uuid.length(21),
     name: schema => schema.name.min(1).max(255),
-    address: schema => schema.address.min(1).max(255).optional(),
     email: schema => schema.email.min(1),
     phone: schema => schema.phone.min(1).max(50).optional(),
     pass: schema => schema.pass.min(4).max(50),
