@@ -95,10 +95,6 @@ export const signin: AppRouteHandler<SigninRoute> = async (c: any) => {
 export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
   const value = c.req.valid('json');
 
-  const { pass } = await c.req.json();
-
-  value.pass = await HashPass(pass);
-
   const [data] = await db.insert(auth_user).values(value).returning({
     name: auth_user.user_uuid,
   });
