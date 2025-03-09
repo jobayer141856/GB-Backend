@@ -203,6 +203,7 @@ export const contact_us = portfolio.table('contact_us', {
   created_at: DateTime('created_at').notNull(),
   updated_at: DateTime('updated_at'),
   remarks: text('remarks'),
+  uuid: uuid_primary,
 });
 
 //* relations *//
