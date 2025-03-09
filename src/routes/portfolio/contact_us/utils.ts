@@ -11,6 +11,7 @@ export const insertSchema = createInsertSchema(
   contact_us,
   {
     id: schema => schema.id,
+    uuid: schema => schema.uuid.length(21),
     name: schema => schema.name.min(1),
     email: schema => schema.email.min(1),
     phone: schema => schema.phone.min(1),
@@ -23,6 +24,7 @@ export const insertSchema = createInsertSchema(
     }),
   },
 ).required({
+  uuid: true,
   name: true,
   email: true,
   phone: true,
