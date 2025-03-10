@@ -14,6 +14,7 @@ export const insertSchema = createInsertSchema(
     product_sub_category_uuid: schema => schema.product_sub_category_uuid.length(21),
     quantity: z.number().int().positive(),
     price: z.number().positive(),
+    weight: z.number().positive().optional(),
     created_by: schema => schema.created_by.length(21),
     created_at: schema => schema.created_at.regex(dateTimePattern, {
       message: 'created_at must be in the format "YYYY-MM-DD HH:MM:SS"',
@@ -35,6 +36,7 @@ export const insertSchema = createInsertSchema(
   created_at: true,
   created_by: true,
 }).partial({
+  weight: true,
   is_published: true,
   is_vatable: true,
   is_featured: true,

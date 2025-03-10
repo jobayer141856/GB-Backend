@@ -1,6 +1,6 @@
 import type { AppRouteHandler } from '@/lib/types';
 
-import { eq, is } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 // import { alias } from 'drizzle-orm/pg-core';
 import * as HSCode from 'stoker/http-status-codes';
 
@@ -45,6 +45,7 @@ export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
     created_at: formData.created_at,
     updated_at: formData.updated_at,
     remarks: formData.remarks,
+    weight: formData.weight,
   };
 
   const [data] = await db.insert(product).values(value).returning({
@@ -133,6 +134,7 @@ export const list: AppRouteHandler<ListRoute> = async (c: any) => {
     quantity: PG_DECIMAL_TO_FLOAT(product.quantity),
     unit: product.unit,
     price: PG_DECIMAL_TO_FLOAT(product.price),
+    weight: PG_DECIMAL_TO_FLOAT(product.weight),
     description: product.description,
     nutrition: product.nutrition,
     is_published: product.is_published,
@@ -177,6 +179,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
     extras: {
       quantity: PG_DECIMAL_TO_FLOAT(product.quantity).as('quantity'),
       price: PG_DECIMAL_TO_FLOAT(product.price).as('price'),
+      weight: PG_DECIMAL_TO_FLOAT(product.weight).as('weight'),
     },
     where(fields, operators) {
       return operators.eq(fields.uuid, uuid);
