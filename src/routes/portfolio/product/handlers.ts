@@ -60,7 +60,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
 
   // updates includes image then do it else exclude it
   if (formData.image) {
-    // get info image name
+    // get product image name
     const productData = await db.query.product.findFirst({
       where(fields, operators) {
         return operators.eq(fields.uuid, uuid);
@@ -68,7 +68,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
     });
 
     if (productData && productData.image) {
-      const imagePath = await updateFile(formData.file, productData.image, 'public/product');
+      const imagePath = await updateFile(formData.image, productData.image, 'public/product');
       formData.image = imagePath;
     }
     else {

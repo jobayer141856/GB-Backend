@@ -1,4 +1,3 @@
-
 import type { AppRouteHandler } from '@/lib/types';
 
 import { eq } from 'drizzle-orm';
@@ -17,7 +16,7 @@ import { shop } from '../schema';
 // const created_user = alias(hrSchema.users, 'created_user');
 
 export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
-  //const value = c.req.valid('json');
+  // const value = c.req.valid('json');
 
   const formData = await c.req.parseBody();
 
@@ -50,7 +49,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
 
   // updates includes image then do it else exclude it
   if (formData.image) {
-    // get info image name
+    // get shop image name
     const shopData = await db.query.shop.findFirst({
       where(fields, operators) {
         return operators.eq(fields.uuid, uuid);
@@ -58,7 +57,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
     });
 
     if (shopData && shopData.image) {
-      const imagePath = await updateFile(formData.file, shopData.image, 'public/shop');
+      const imagePath = await updateFile(formData.image, shopData.image, 'public/shop');
       formData.image = imagePath;
     }
     else {
@@ -86,17 +85,17 @@ export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
 export const remove: AppRouteHandler<RemoveRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
 
-    // get info image name
+  // get info image name
 
-    const shopData = await db.query.shop.findFirst({
-      where(fields, operators) {
-        return operators.eq(fields.uuid, uuid);
-      },
-    });
-  
-    if (shopData && shopData.image) {
-      deleteFile(shopData.image);
-    }
+  const shopData = await db.query.shop.findFirst({
+    where(fields, operators) {
+      return operators.eq(fields.uuid, uuid);
+    },
+  });
+
+  if (shopData && shopData.image) {
+    deleteFile(shopData.image);
+  }
 
   const [data] = await db.delete(shop)
     .where(eq(shop.uuid, uuid))

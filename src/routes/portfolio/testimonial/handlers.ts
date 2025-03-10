@@ -1,4 +1,3 @@
-
 import type { AppRouteHandler } from '@/lib/types';
 
 import { eq } from 'drizzle-orm';
@@ -49,7 +48,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
 
   // updates includes file then do it else exclude it
   if (formData.image) {
-    // get info file name
+    // get testimonial image name
     const testimonialData = await db.query.testimonial.findFirst({
       where(fields, operators) {
         return operators.eq(fields.uuid, uuid);
@@ -57,7 +56,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
     });
 
     if (testimonialData && testimonialData.image) {
-      const imagePath = await updateFile(formData.file, testimonialData.image, 'public/testimonial');
+      const imagePath = await updateFile(formData.image, testimonialData.image, 'public/testimonial');
       formData.image = imagePath;
     }
     else {
