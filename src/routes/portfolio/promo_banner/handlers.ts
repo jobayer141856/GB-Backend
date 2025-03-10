@@ -1,7 +1,7 @@
 import type { AppRouteHandler } from '@/lib/types';
 
-import { eq } from 'drizzle-orm';
-// import { alias } from 'drizzle-orm/pg-core';
+import { eq, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import * as HSCode from 'stoker/http-status-codes';
 
 import db from '@/db';
@@ -11,9 +11,9 @@ import { deleteFile, insertFile, updateFile } from '@/utils/upload_file';
 
 import type { CreateRoute, GetOneRoute, ListRoute, PatchRoute, RemoveRoute } from './routes';
 
-import { promo_banner } from '../schema';
+import { product, promo_banner, promo_banner_product } from '../schema';
 
-// const created_user = alias(hrSchema.users, 'created_user');
+const created_user = alias(hrSchema.users, 'created_user');
 
 export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
   // const value = c.req.valid('json');
@@ -138,14 +138,39 @@ export const list: AppRouteHandler<ListRoute> = async (c: any) => {
 export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
 
-  const data = await db.query.promo_banner.findFirst({
-    where(fields, operators) {
-      return operators.eq(fields.uuid, uuid);
-    },
-    with: {
-      promo_banner_product: true,
-    },
-  });
+  const resultPromise = db.select({
+    uuid: promo_banner.uuid,
+    name: promo_banner.name,
+    image: promo_banner.image,
+    discount_type: promo_banner.discount_type,
+    discount: promo_banner.discount,
+    start_datetime: promo_banner.start_datetime,
+    end_datetime: promo_banner.end_datetime,
+    created_at: promo_banner.created_at,
+    updated_at: promo_banner.updated_at,
+    remarks: promo_banner.remarks,
+    created_by: promo_banner.created_by,
+    created_by_name: hrSchema.users.name,
+    promo_banner_product: sql`
+    json_agg(json_build_object(
+      'uuid', promo_banner_product.uuid,
+      'product_uuid', promo_banner_product.product_uuid,
+      'product_name', product.name,
+      'created_by', promo_banner_product.created_by,
+      'created_by_name', created_user.name,
+      'created_at', promo_banner_product.created_at,
+      'updated_at', promo_banner_product.updated_at
+    ))`,
+  })
+    .from(promo_banner)
+    .leftJoin(hrSchema.users, eq(promo_banner.created_by, hrSchema.users.uuid))
+    .leftJoin(promo_banner_product, eq(promo_banner.uuid, promo_banner_product.promo_banner_uuid))
+    .leftJoin(created_user, eq(promo_banner_product.created_by, created_user.uuid))
+    .leftJoin(product, eq(promo_banner_product.product_uuid, product.uuid))
+    .where(eq(promo_banner.uuid, uuid))
+    .groupBy(promo_banner.uuid, promo_banner.name, promo_banner.image, promo_banner.discount_type, promo_banner.discount, promo_banner.start_datetime, promo_banner.end_datetime, promo_banner.created_at, promo_banner.updated_at, promo_banner.remarks, promo_banner.created_by, hrSchema.users.name);
+
+  const data = await resultPromise;
 
   if (!data)
     return DataNotFound(c);
