@@ -1,6 +1,6 @@
 import type { AppRouteHandler } from '@/lib/types';
 
-import { eq } from 'drizzle-orm';
+import { eq, is } from 'drizzle-orm';
 // import { alias } from 'drizzle-orm/pg-core';
 import * as HSCode from 'stoker/http-status-codes';
 
@@ -121,6 +121,8 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c: any) => {
 };
 
 export const list: AppRouteHandler<ListRoute> = async (c: any) => {
+  const { is_published, is_featured, is_popular, is_vatable, is_variable_weight } = c.req.valid('query');
+
   const resultPromise = db.select({
     id: product.id,
     uuid: product.uuid,
@@ -147,6 +149,21 @@ export const list: AppRouteHandler<ListRoute> = async (c: any) => {
     .from(product)
     .leftJoin(hrSchema.users, eq(product.created_by, hrSchema.users.uuid))
     .leftJoin(product_sub_category, eq(product.product_sub_category_uuid, product_sub_category.uuid));
+
+  if (is_published)
+    resultPromise.where(eq(product.is_published, is_published));
+
+  if (is_featured)
+    resultPromise.where(eq(product.is_featured, is_featured));
+
+  if (is_popular)
+    resultPromise.where(eq(product.is_popular, is_popular));
+
+  if (is_vatable)
+    resultPromise.where(eq(product.is_vatable, is_vatable));
+
+  if (is_variable_weight)
+    resultPromise.where(eq(product.is_variable_weight, is_variable_weight));
 
   const data: any[] = await resultPromise;
 

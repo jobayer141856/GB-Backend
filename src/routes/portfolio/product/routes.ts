@@ -14,11 +14,15 @@ export const list = createRoute({
   path: '/portfolio/product',
   method: 'get',
   tags,
-  // request: {
-  //   query: z.object({
-  //     category: z.string().optional(),
-  //   }),
-  // },
+  request: {
+    query: z.object({
+      is_featured: z.string().optional(),
+      is_popular: z.string().optional(),
+      is_published: z.string().optional(),
+      is_vatable: z.string().optional(),
+      is_variable_weight: z.string().optional(),
+    }),
+  },
   responses: {
     [HSCode.OK]: jsonContent(
       z.array(selectSchema),
@@ -31,16 +35,16 @@ export const create = createRoute({
   path: '/portfolio/product',
   method: 'post',
   request: {
-        body: {
-          content: {
-            'multipart/form-data': {
-              schema: {
-                ...insertSchema,
-              },
-            },
+    body: {
+      content: {
+        'multipart/form-data': {
+          schema: {
+            ...insertSchema,
           },
         },
       },
+    },
+  },
   tags,
   responses: {
     [HSCode.OK]: jsonContent(
