@@ -121,7 +121,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
     .where(eq(order.uuid, uuid))
     .groupBy(order.id, order.uuid, hrSchema.users.name, created_user.name);
 
-  const data = await resultPromise;
+  const [data] = await resultPromise;
 
   if (!data)
     return DataNotFound(c);

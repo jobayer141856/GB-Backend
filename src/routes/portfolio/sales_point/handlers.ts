@@ -10,7 +10,7 @@ import { createToast, DataNotFound, ObjectNotFound } from '@/utils/return';
 
 import type { CreateRoute, GetOneRoute, ListRoute, PatchRoute, RemoveRoute } from './routes';
 
-import { sales_point } from '../schema';
+import { sales_point, shop } from '../schema';
 
 const created_user = alias(hrSchema.users, 'created_user');
 
@@ -64,6 +64,7 @@ export const list: AppRouteHandler<ListRoute> = async (c: any) => {
     id: sales_point.id,
     uuid: sales_point.uuid,
     shop_uuid: sales_point.shop_uuid,
+    shop_name: shop.name,
     name: sales_point.name,
     phone: sales_point.phone,
     details: sales_point.details,
@@ -77,6 +78,7 @@ export const list: AppRouteHandler<ListRoute> = async (c: any) => {
     remarks: sales_point.remarks,
   })
     .from(sales_point)
+    .leftJoin(shop, eq(shop.uuid, sales_point.shop_uuid))
     .leftJoin(created_user, eq(created_user.uuid, sales_point.created_by));
 
   const data: any[] = await resultPromise;
@@ -87,11 +89,29 @@ export const list: AppRouteHandler<ListRoute> = async (c: any) => {
 export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
 
-  const data = await db.query.sales_point.findFirst({
-    where(fields, operators) {
-      return operators.eq(fields.uuid, uuid);
-    },
-  });
+  const resultPromise = db.select({
+    id: sales_point.id,
+    uuid: sales_point.uuid,
+    shop_uuid: sales_point.shop_uuid,
+    shop_name: shop.name,
+    name: sales_point.name,
+    phone: sales_point.phone,
+    details: sales_point.details,
+    latitude: sales_point.latitude,
+    longitude: sales_point.longitude,
+    address: sales_point.address,
+    created_by: sales_point.created_by,
+    created_by_name: created_user.name,
+    created_at: sales_point.created_at,
+    updated_at: sales_point.updated_at,
+    remarks: sales_point.remarks,
+  })
+    .from(sales_point)
+    .leftJoin(shop, eq(shop.uuid, sales_point.shop_uuid))
+    .leftJoin(created_user, eq(created_user.uuid, sales_point.created_by))
+    .where(eq(sales_point.uuid, uuid));
+
+  const [data] = await resultPromise;
 
   if (!data)
     return DataNotFound(c);

@@ -170,7 +170,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
     .where(eq(promo_banner.uuid, uuid))
     .groupBy(promo_banner.uuid, promo_banner.name, promo_banner.image, promo_banner.discount_type, promo_banner.discount, promo_banner.start_datetime, promo_banner.end_datetime, promo_banner.created_at, promo_banner.updated_at, promo_banner.remarks, promo_banner.created_by, hrSchema.users.name);
 
-  const data = await resultPromise;
+  const [data] = await resultPromise;
 
   if (!data)
     return DataNotFound(c);
