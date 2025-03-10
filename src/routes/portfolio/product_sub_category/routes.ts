@@ -14,11 +14,11 @@ export const list = createRoute({
   path: '/portfolio/product-sub-category',
   method: 'get',
   tags,
-  // request: {
-  //   query: z.object({
-  //     category: z.string().optional(),
-  //   }),
-  // },
+  request: {
+    query: z.object({
+      category_uuid: z.string().optional(),
+    }),
+  },
   responses: {
     [HSCode.OK]: jsonContent(
       z.array(selectSchema),
@@ -31,16 +31,16 @@ export const create = createRoute({
   path: '/portfolio/product-sub-category',
   method: 'post',
   request: {
-        body: {
-          content: {
-            'multipart/form-data': {
-              schema: {
-                ...insertSchema,
-              },
-            },
+    body: {
+      content: {
+        'multipart/form-data': {
+          schema: {
+            ...insertSchema,
           },
         },
       },
+    },
+  },
   tags,
   responses: {
     [HSCode.OK]: jsonContent(
@@ -127,8 +127,24 @@ export const remove = createRoute({
   },
 });
 
+export const getByCategory = createRoute({
+  path: '/portfolio/product-sub-category/by/category-uuid/{uuid}',
+  method: 'get',
+  tags,
+  request: {
+    params: param.uuid,
+  },
+  responses: {
+    [HSCode.OK]: jsonContent(
+      z.array(selectSchema),
+      'The list of product_sub_category',
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
+export type GetByCategoryRoute = typeof getByCategory;

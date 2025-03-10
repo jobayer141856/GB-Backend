@@ -1,7 +1,7 @@
 import type { AppRouteHandler } from '@/lib/types';
 
-import { eq } from 'drizzle-orm';
-// import { alias } from 'drizzle-orm/pg-core';
+import { eq, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import * as HSCode from 'stoker/http-status-codes';
 
 import db from '@/db';
@@ -9,11 +9,11 @@ import * as hrSchema from '@/routes/hr/schema';
 import { createToast, DataNotFound, ObjectNotFound } from '@/utils/return';
 import { deleteFile, insertFile, updateFile } from '@/utils/upload_file';
 
-import type { CreateRoute, GetOneRoute, ListRoute, PatchRoute, RemoveRoute } from './routes';
+import type { CreateRoute, GetByCategoryRoute, GetOneRoute, ListRoute, PatchRoute, RemoveRoute } from './routes';
 
-import { product_category, product_sub_category } from '../schema';
+import { product, product_category, product_sub_category } from '../schema';
 
-// const created_user = alias(hrSchema.users, 'created_user');
+const created_user = alias(hrSchema.users, 'created_user');
 
 export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
   // const value = c.req.valid('json');
@@ -138,20 +138,96 @@ export const list: AppRouteHandler<ListRoute> = async (c: any) => {
 
   const data: any[] = await resultPromise;
 
+  if (!data) {
+    return DataNotFound(c);
+  }
+
   return c.json(data || [], HSCode.OK);
 };
 
 export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
 
-  const data = await db.query.product_sub_category.findFirst({
-    where(fields, operators) {
-      return operators.eq(fields.uuid, uuid);
-    },
-  });
+  const resultPromise = db.select({
+    id: product_sub_category.id,
+    uuid: product_sub_category.uuid,
+    name: product_sub_category.name,
+    product_category_uuid: product_sub_category.product_category_uuid,
+    product_category_name: product_category.name,
+    image: product_sub_category.image,
+    status: product_sub_category.status,
+    created_at: product_sub_category.created_at,
+    updated_at: product_sub_category.updated_at,
+    remarks: product_sub_category.remarks,
+    created_by: product_sub_category.created_by,
+    created_by_name: hrSchema.users.name,
+  })
+    .from(product_sub_category)
+    .leftJoin(hrSchema.users, eq(product_sub_category.created_by, hrSchema.users.uuid))
+    .leftJoin(product_category, eq(product_sub_category.product_category_uuid, product_category.uuid))
+    .where(eq(product_sub_category.uuid, uuid));
+
+  const [data] = await resultPromise;
 
   if (!data)
     return DataNotFound(c);
 
   return c.json(data || {}, HSCode.OK);
+};
+
+export const getByCategory: AppRouteHandler<GetByCategoryRoute> = async (c: any) => {
+  const { uuid } = c.req.valid('param');
+  const resultPromise = db.select({
+    id: product_sub_category.id,
+    uuid: product_sub_category.uuid,
+    name: product_sub_category.name,
+    product_category_uuid: product_sub_category.product_category_uuid,
+    product_category_name: product_category.name,
+    image: product_sub_category.image,
+    status: product_sub_category.status,
+    created_at: product_sub_category.created_at,
+    updated_at: product_sub_category.updated_at,
+    remarks: product_sub_category.remarks,
+    created_by: product_sub_category.created_by,
+    created_by_name: hrSchema.users.name,
+    product: sql`json_agg(json_build_object(
+      'id', product.id,
+      'uuid', product.uuid,
+      'name', product.name,
+      'product_sub_category_uuid', product.product_sub_category_uuid,
+      'product_sub_category_name', product_sub_category.name,
+      'image', product.image,
+      'quantity', product.quantity,
+      'unit', product.unit,
+      'price', product.price,
+      'weight', product.weight,
+      'description', product.description,
+      'nutrition', product.nutrition,
+      'is_published', product.is_published,
+      'is_vatable', product.is_vatable,
+      'is_featured', product.is_featured,
+      'is_popular', product.is_popular,
+      'is_variable_weight', product.is_variable_weight,
+      'created_at', product.created_at,
+      'updated_at', product.updated_at,
+      'remarks', product.remarks,
+      'created_by', product.created_by,
+      'created_by_name', created_user.name
+    ))`,
+  })
+    .from(product_sub_category)
+    .leftJoin(hrSchema.users, eq(product_sub_category.created_by, hrSchema.users.uuid))
+    .leftJoin(product_category, eq(product_sub_category.product_category_uuid, product_category.uuid))
+    .leftJoin(product, eq(product.product_sub_category_uuid, product_sub_category.uuid))
+    .leftJoin(created_user, eq(product.created_by, created_user.uuid))
+    .where(eq(product_sub_category.product_category_uuid, uuid))
+    .groupBy(product_sub_category.id, product_sub_category.uuid, product_sub_category.name, product_sub_category.product_category_uuid, product_category.name, product_sub_category.image, product_sub_category.status, product_sub_category.created_at, product_sub_category.updated_at, product_sub_category.remarks, product_sub_category.created_by, hrSchema.users.name);
+
+  const data: any[] = await resultPromise;
+
+  if (!data) {
+    return DataNotFound(c);
+  }
+
+  return c.json(data || [], HSCode.OK);
 };
