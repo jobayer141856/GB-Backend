@@ -108,7 +108,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
       'product_name', product.name,
       'quantity', order_product.quantity,
       'price', order_product.price,
-      'is_vatable', product.is_vatable,
+      'is_vatable', order_product.is_vatable,
       'created_at', order_product.created_at,
       'updated_at', order_product.updated_at
     ))`,

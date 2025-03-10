@@ -78,11 +78,21 @@ export const list: AppRouteHandler<ListRoute> = async (c: any) => {
 export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
 
-  const data = await db.query.order_product.findFirst({
-    where(fields, operators) {
-      return operators.eq(fields.uuid, uuid);
-    },
-  });
+  const resultPromise = db.select({
+    uuid: order_product.uuid,
+    order_uuid: order_product.order_uuid,
+    product_uuid: order_product.product_uuid,
+    quantity: order_product.quantity,
+    price: PG_DECIMAL_TO_FLOAT(order_product.price),
+    is_vatable: order_product.is_vatable,
+    created_at: order_product.created_at,
+    updated_at: order_product.updated_at,
+    remarks: order_product.remarks,
+  })
+    .from(order_product)
+    .where(eq(order_product.uuid, uuid));
+
+  const [data] = await resultPromise;
 
   if (!data)
     return DataNotFound(c);
