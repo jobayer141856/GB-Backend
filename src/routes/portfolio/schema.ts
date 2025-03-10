@@ -70,6 +70,7 @@ export const product = portfolio.table('product', {
   created_at: DateTime('created_at').notNull(),
   updated_at: DateTime('updated_at'),
   remarks: text('remarks'),
+  weight: PG_DECIMAL('weight').default(sql`0`),
 });
 
 export const shop_id = portfolio.sequence('shop_id', DEFAULT_SEQUENCE);
