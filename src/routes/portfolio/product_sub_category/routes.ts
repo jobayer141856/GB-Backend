@@ -133,6 +133,9 @@ export const getByCategory = createRoute({
   tags,
   request: {
     params: param.uuid,
+    query: z.object({
+      name: z.string().optional(),
+    }),
   },
   responses: {
     [HSCode.OK]: jsonContent(

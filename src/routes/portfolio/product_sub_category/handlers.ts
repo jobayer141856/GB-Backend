@@ -1,6 +1,6 @@
 import type { AppRouteHandler } from '@/lib/types';
 
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, ilike, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import * as HSCode from 'stoker/http-status-codes';
 
@@ -177,6 +177,8 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
 
 export const getByCategory: AppRouteHandler<GetByCategoryRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
+  const { name } = c.req.valid('query');
+  console.log(uuid, name);
   const resultPromise = db.select({
     id: product_sub_category.id,
     uuid: product_sub_category.uuid,
@@ -190,7 +192,7 @@ export const getByCategory: AppRouteHandler<GetByCategoryRoute> = async (c: any)
     remarks: product_sub_category.remarks,
     created_by: product_sub_category.created_by,
     created_by_name: hrSchema.users.name,
-    product: sql`json_agg(json_build_object(
+    product: sql`COALESCE(json_agg(json_build_object(
       'id', product.id,
       'uuid', product.uuid,
       'name', product.name,
@@ -213,14 +215,21 @@ export const getByCategory: AppRouteHandler<GetByCategoryRoute> = async (c: any)
       'remarks', product.remarks,
       'created_by', product.created_by,
       'created_by_name', created_user.name
-    ))`,
+    )), '[]')`,
   })
     .from(product_sub_category)
     .leftJoin(hrSchema.users, eq(product_sub_category.created_by, hrSchema.users.uuid))
     .leftJoin(product_category, eq(product_sub_category.product_category_uuid, product_category.uuid))
     .leftJoin(product, eq(product.product_sub_category_uuid, product_sub_category.uuid))
     .leftJoin(created_user, eq(product.created_by, created_user.uuid))
-    .where(eq(product_sub_category.product_category_uuid, uuid))
+    .where(
+      name
+        ? and(
+            eq(product_sub_category.product_category_uuid, uuid),
+            ilike(product.name, `%${name}%`),
+          )
+        : eq(product_sub_category.product_category_uuid, uuid),
+    )
     .groupBy(product_sub_category.id, product_sub_category.uuid, product_sub_category.name, product_sub_category.product_category_uuid, product_category.name, product_sub_category.image, product_sub_category.status, product_sub_category.created_at, product_sub_category.updated_at, product_sub_category.remarks, product_sub_category.created_by, hrSchema.users.name);
 
   const data: any[] = await resultPromise;
