@@ -40,7 +40,7 @@ export const product_sub_category = portfolio.table('product_sub_category', {
   id: integer('id').default(sql`nextval('portfolio.product_sub_category_id')`),
   product_category_uuid: defaultUUID('product_category_uuid').references(() => product_category.uuid, DEFAULT_OPERATION),
   name: text('name').notNull(),
-  image: text('image').notNull(),
+  image: text('image'),
   status: boolean('status').default(false),
   created_by: defaultUUID('created_by').references(() => users.uuid, DEFAULT_OPERATION),
   created_at: DateTime('created_at').notNull(),
