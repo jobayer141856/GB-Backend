@@ -1,7 +1,7 @@
 import type { AppRouteHandler } from '@/lib/types';
 
-import { eq } from 'drizzle-orm';
-// import { alias } from 'drizzle-orm/pg-core';
+import { eq, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import * as HSCode from 'stoker/http-status-codes';
 
 import db from '@/db';
@@ -12,9 +12,9 @@ import { deleteFile, insertFile, updateFile } from '@/utils/upload_file';
 
 import type { CreateRoute, GetOneRoute, ListRoute, PatchRoute, RemoveRoute } from './routes';
 
-import { product, product_sub_category } from '../schema';
+import { product, product_sale_point, product_sub_category, sales_point } from '../schema';
 
-// const created_user = alias(hrSchema.users, 'created_user');
+const created_user = alias(hrSchema.users, 'created_user');
 
 export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
   // const value = c.req.valid('json');
@@ -175,16 +175,52 @@ export const list: AppRouteHandler<ListRoute> = async (c: any) => {
 export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
 
-  const data = await db.query.product.findFirst({
-    extras: {
-      quantity: PG_DECIMAL_TO_FLOAT(product.quantity).as('quantity'),
-      price: PG_DECIMAL_TO_FLOAT(product.price).as('price'),
-      weight: PG_DECIMAL_TO_FLOAT(product.weight).as('weight'),
-    },
-    where(fields, operators) {
-      return operators.eq(fields.uuid, uuid);
-    },
-  });
+  const resultPromise = db.select({
+    id: product.id,
+    uuid: product.uuid,
+    name: product.name,
+    product_sub_category_uuid: product.product_sub_category_uuid,
+    product_sub_category_name: product_sub_category.name,
+    image: product.image,
+    quantity: PG_DECIMAL_TO_FLOAT(product.quantity),
+    unit: product.unit,
+    price: PG_DECIMAL_TO_FLOAT(product.price),
+    weight: PG_DECIMAL_TO_FLOAT(product.weight),
+    description: product.description,
+    nutrition: product.nutrition,
+    is_published: product.is_published,
+    is_vatable: product.is_vatable,
+    is_featured: product.is_featured,
+    is_popular: product.is_popular,
+    is_variable_weight: product.is_variable_weight,
+    created_at: product.created_at,
+    updated_at: product.updated_at,
+    remarks: product.remarks,
+    created_by: product.created_by,
+    created_by_name: hrSchema.users.name,
+    product_sale_point: sql`
+    json_agg(json_build_object(
+      'uuid', product_sale_point.uuid,
+      'sales_point_uuid', product_sale_point.sales_point_uuid,
+      'sales_point_name', sales_point.name,
+      'created_by', product_sale_point.created_by,
+      'created_by_name', created_user.name,
+      'created_at', product_sale_point.created_at,
+      'updated_at', product_sale_point.updated_at,
+      'remarks', product_sale_point.remarks
+
+    ))`,
+  })
+    .from(product)
+    .leftJoin(hrSchema.users, eq(product.created_by, hrSchema.users.uuid))
+    .leftJoin(product_sub_category, eq(product.product_sub_category_uuid, product_sub_category.uuid))
+    .leftJoin(product_sale_point, eq(product_sale_point.product_uuid, product.uuid))
+    .leftJoin(sales_point, eq(product_sale_point.sales_point_uuid, sales_point.uuid))
+    .leftJoin(created_user, eq(product_sale_point.created_by, created_user.uuid))
+    .where(eq(product.uuid, uuid))
+    .groupBy(product.id, product.uuid, hrSchema.users.name, created_user.name, product_sub_category.name);
+
+  const [data] = await resultPromise;
 
   if (!data)
     return DataNotFound(c);
