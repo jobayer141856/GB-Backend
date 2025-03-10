@@ -66,6 +66,7 @@ export const list: AppRouteHandler<ListRoute> = async (c: any) => {
     created_at: contact_us.created_at,
     updated_at: contact_us.updated_at,
     remarks: contact_us.remarks,
+    is_contacted: contact_us.is_contacted,
   })
     .from(contact_us);
 
