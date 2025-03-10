@@ -96,7 +96,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c: any) => {
 export const remove: AppRouteHandler<RemoveRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
 
-  // get info image name
+  // get product image name
 
   const productData = await db.query.product.findFirst({
     where(fields, operators) {
