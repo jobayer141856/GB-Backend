@@ -9,11 +9,17 @@ import { auth_user, users } from '@/routes/hr/schema';
 import type { UserAccessRoute, ValueLabelRoute } from './routes';
 
 export const valueLabel: AppRouteHandler<ValueLabelRoute> = async (c: any) => {
+  const { type } = c.req.valid('query');
+
   const resultPromise = db.select({
     value: users.uuid,
     label: users.name,
   })
     .from(users);
+
+  if (type !== null && type !== undefined) {
+    resultPromise.where(eq(users.type, type));
+  }
 
   const data = await resultPromise;
 

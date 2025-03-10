@@ -9,6 +9,11 @@ export const valueLabelRoute = createRoute({
   path: '/other/hr/users/value/label',
   method: 'get',
   tags,
+  requests: {
+    query: z.object({
+      type: z.string().optional(),
+    }),
+  },
   responses: {
     [HSCode.OK]: jsonContent(
       z.object({
