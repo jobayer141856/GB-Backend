@@ -204,6 +204,7 @@ export const contact_us = portfolio.table('contact_us', {
   updated_at: DateTime('updated_at'),
   remarks: text('remarks'),
   uuid: uuid_primary,
+  is_contacted: boolean('is_contacted').default(false),
 });
 
 //* relations *//
