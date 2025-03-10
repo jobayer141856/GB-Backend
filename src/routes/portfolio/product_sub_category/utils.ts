@@ -24,10 +24,10 @@ export const insertSchema = createInsertSchema(
   uuid: true,
   product_category_uuid: true,
   name: true,
-  image: true,
   created_at: true,
   created_by: true,
 }).partial({
+  image: true,
   status: true,
   updated_at: true,
   remarks: true,
