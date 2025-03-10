@@ -178,7 +178,6 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
 export const getByCategory: AppRouteHandler<GetByCategoryRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
   const { name } = c.req.valid('query');
-  console.log(uuid, name);
   const resultPromise = db.select({
     id: product_sub_category.id,
     uuid: product_sub_category.uuid,
@@ -192,30 +191,35 @@ export const getByCategory: AppRouteHandler<GetByCategoryRoute> = async (c: any)
     remarks: product_sub_category.remarks,
     created_by: product_sub_category.created_by,
     created_by_name: hrSchema.users.name,
-    product: sql`COALESCE(json_agg(json_build_object(
-      'id', product.id,
-      'uuid', product.uuid,
-      'name', product.name,
-      'product_sub_category_uuid', product.product_sub_category_uuid,
-      'product_sub_category_name', product_sub_category.name,
-      'image', product.image,
-      'quantity', product.quantity,
-      'unit', product.unit,
-      'price', product.price,
-      'weight', product.weight,
-      'description', product.description,
-      'nutrition', product.nutrition,
-      'is_published', product.is_published,
-      'is_vatable', product.is_vatable,
-      'is_featured', product.is_featured,
-      'is_popular', product.is_popular,
-      'is_variable_weight', product.is_variable_weight,
-      'created_at', product.created_at,
-      'updated_at', product.updated_at,
-      'remarks', product.remarks,
-      'created_by', product.created_by,
-      'created_by_name', created_user.name
-    )), '[]')`,
+    product: sql`COALESCE(
+    json_agg(
+      CASE
+        WHEN product.id IS NOT NULL THEN json_build_object(
+          'id', product.id,
+          'uuid', product.uuid,
+          'name', product.name,
+          'image', product.image,
+          'quantity', product.quantity,
+          'unit', product.unit,
+          'price', product.price,
+          'weight', product.weight,
+          'description', product.description,
+          'nutrition', product.nutrition,
+          'is_published', product.is_published,
+          'is_vatable', product.is_vatable,
+          'is_featured', product.is_featured,
+          'is_popular', product.is_popular,
+          'is_variable_weight', product.is_variable_weight,
+          'created_at', product.created_at,
+          'updated_at', product.updated_at,
+          'remarks', product.remarks,
+          'created_by', product.created_by,
+          'created_by_name', created_user.name
+        )
+        ELSE NULL
+      END
+    ) FILTER (WHERE product.id IS NOT NULL), '[]'
+  )`,
   })
     .from(product_sub_category)
     .leftJoin(hrSchema.users, eq(product_sub_category.created_by, hrSchema.users.uuid))
