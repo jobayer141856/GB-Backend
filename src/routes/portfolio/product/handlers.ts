@@ -221,7 +221,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
     .leftJoin(created_user, eq(product_sale_point.created_by, created_user.uuid))
     .leftJoin(product_category, eq(product_sub_category.product_category_uuid, product_category.uuid))
     .where(eq(product.uuid, uuid))
-    .groupBy(product.id, product.uuid, hrSchema.users.name, created_user.name, product_sub_category.name);
+    .groupBy(product.id, product.uuid, hrSchema.users.name, created_user.name, product_sub_category.name, product_sub_category.product_category_uuid, product_category.name);
 
   const [data] = await resultPromise;
 
