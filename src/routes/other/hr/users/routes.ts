@@ -9,7 +9,7 @@ export const valueLabelRoute = createRoute({
   path: '/other/hr/users/value/label',
   method: 'get',
   tags,
-  requests: {
+  request: {
     query: z.object({
       type: z.string().optional(),
     }),
