@@ -9,7 +9,8 @@ import { auth_user, users } from '@/routes/hr/schema';
 import type { UserAccessRoute, ValueLabelRoute } from './routes';
 
 export const valueLabel: AppRouteHandler<ValueLabelRoute> = async (c: any) => {
-  const { type } = c.req.valid('query');
+  const query = c.req.valid('query');
+  const { type } = query || {};
 
   const resultPromise = db.select({
     value: users.uuid,
