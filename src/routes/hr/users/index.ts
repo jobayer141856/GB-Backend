@@ -10,6 +10,7 @@ const router = createRouter()
   .openapi(routes.getOne, handlers.getOne)
   .openapi(routes.patch, handlers.patch)
   .openapi(routes.remove, handlers.remove)
+  .openapi(routes.patchChangePassword, handlers.patchChangePassword)
   // .openapi(routes.getCanAccess, handlers.getCanAccess)
   // .openapi(routes.patchCanAccess, handlers.patchCanAccess)
   .openapi(routes.patchUserStatus, handlers.patchUserStatus);
