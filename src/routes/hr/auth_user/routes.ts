@@ -216,21 +216,21 @@ export const signin = createRoute({
     ),
   },
 });
-export const patchChangePassword = createRoute({
-  path: '/hr/users/password/{uuid}',
-  method: 'patch',
-  tags,
-  request: {
-    params: param.uuid,
-  },
-  responses: {
-    [HSCode.OK]: jsonContent(
-      z.array(selectSchema),
-      'The valueLabel of user',
-    ),
-  },
+// export const patchChangePassword = createRoute({
+//   path: '/hr/users/password/{uuid}',
+//   method: 'patch',
+//   tags,
+//   request: {
+//     params: param.uuid,
+//   },
+//   responses: {
+//     [HSCode.OK]: jsonContent(
+//       z.array(selectSchema),
+//       'The valueLabel of user',
+//     ),
+//   },
 
-});
+// });
 
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
@@ -242,4 +242,4 @@ export type SignoutRoute = typeof signout;
 export type GetCanAccessRoute = typeof getCanAccess;
 export type PatchCanAccessRoute = typeof patchCanAccess;
 export type PatchStatusRoute = typeof patchStatus;
-export type PatchChangePasswordRoute = typeof patchChangePassword;
+// export type PatchChangePasswordRoute = typeof patchChangePassword;
