@@ -12,7 +12,7 @@ import { deleteFile, insertFile, updateFile } from '@/utils/upload_file';
 
 import type { CreateRoute, GetOneRoute, ListRoute, PatchRoute, RemoveRoute } from './routes';
 
-import { product, product_sale_point, product_sub_category, sales_point } from '../schema';
+import { product, product_category, product_sale_point, product_sub_category, sales_point } from '../schema';
 
 const created_user = alias(hrSchema.users, 'created_user');
 
@@ -179,6 +179,8 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
     id: product.id,
     uuid: product.uuid,
     name: product.name,
+    product_category_uuid: product_sub_category.product_category_uuid,
+    product_category_name: product_category.name,
     product_sub_category_uuid: product.product_sub_category_uuid,
     product_sub_category_name: product_sub_category.name,
     image: product.image,
@@ -217,6 +219,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
     .leftJoin(product_sale_point, eq(product_sale_point.product_uuid, product.uuid))
     .leftJoin(sales_point, eq(product_sale_point.sales_point_uuid, sales_point.uuid))
     .leftJoin(created_user, eq(product_sale_point.created_by, created_user.uuid))
+    .leftJoin(product_category, eq(product_sub_category.product_category_uuid, product_category.uuid))
     .where(eq(product.uuid, uuid))
     .groupBy(product.id, product.uuid, hrSchema.users.name, created_user.name, product_sub_category.name);
 
