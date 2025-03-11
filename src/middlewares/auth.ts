@@ -6,8 +6,6 @@ import { sign, verify } from 'hono/jwt';
 
 import env from '@/env';
 
-import { signin } from './../routes/hr/auth_user/routes';
-
 export async function HashPass(password: string) {
   const hashPassword = await hash(password, env.SALT);
 
