@@ -1,10 +1,11 @@
 import type { AppRouteHandler } from '@/lib/types';
+import type { JWTPayload } from 'hono/utils/jwt/types';
 
 import { eq } from 'drizzle-orm';
 import * as HSCode from 'stoker/http-status-codes';
 
 import db from '@/db';
-import { HashPass } from '@/middlewares/auth';
+import { ComparePass, CreateToken, HashPass } from '@/middlewares/auth';
 import { createToast, DataNotFound, ObjectNotFound } from '@/utils/return';
 
 import type {
@@ -13,73 +14,67 @@ import type {
   ListRoute,
   PatchChangePasswordRoute,
   PatchRoute,
+  PatchUserStatusRoute,
   RemoveRoute,
+  SigninRoute,
 } from './routes';
 
 import { auth_user, users } from '../schema';
 
-// export const signin: AppRouteHandler<SigninRoute> = async (c: any) => {
-//   const updates = c.req.valid('json');
+export const userSignin: AppRouteHandler<SigninRoute> = async (c: any) => {
+  const updates = c.req.valid('json');
 
-//   if (Object.keys(updates).length === 0)
-//     return ObjectNotFound(c);
+  if (Object.keys(updates).length === 0)
+    return ObjectNotFound(c);
 
-//   const { email, pass } = await c.req.json();
-//   const resultPromise = db.select({
-//     email: users.email,
-//     // pass: users.pass,
-//     // status: users.status,
-//     uuid: users.uuid,
-//     name: users.name,
-//     // can_access: users.can_access,
-//     department_uuid: users.department_uuid,
-//     designation_uuid: users.designation_uuid,
-//     department_name: department.name,
-//     designation_name: designation.name,
-//   })
-//     .from(users)
-//     .leftJoin(department, eq(users.department_uuid, department.uuid))
-//     .leftJoin(designation, eq(users.designation_uuid, designation.uuid))
-//     .where(eq(users.email, email));
+  const { email, pass } = await c.req.json();
+  const resultPromise = db.select({
+    email: users.email,
+    pass: users.pass,
+    status: users.status,
+    uuid: users.uuid,
+    name: users.name,
+  })
+    .from(users)
+    .where(eq(users.email, email));
 
-//   const [data] = await resultPromise;
+  const [data] = await resultPromise;
 
-//   if (!data)
-//     return DataNotFound(c);
+  if (!data)
+    return DataNotFound(c);
 
-//   if (!data.status) {
-//     return c.json(
-//       { message: 'Account is disabled' },
-//       HSCode.UNAUTHORIZED,
-//     );
-//   }
+  if (!data.status) {
+    return c.json(
+      { message: 'Account is disabled' },
+      HSCode.UNAUTHORIZED,
+    );
+  }
 
-//   const match = ComparePass(pass, data.pass);
-//   if (!match) {
-//     return c.json({ message: 'Email/Password does not match' }, HSCode.UNAUTHORIZED);
-//   }
+  const match = ComparePass(pass, data.pass);
+  if (!match) {
+    return c.json({ message: 'Email/Password does not match' }, HSCode.UNAUTHORIZED);
+  }
 
-//   const now = Math.floor(Date.now() / 1000);
-//   const payload: JWTPayload = {
-//     uuid: data.uuid,
-//     username: data.name,
-//     email: data.email,
-//     can_access: data.can_access,
-//     exp: now + 60 * 60 * 24,
-//   };
+  const now = Math.floor(Date.now() / 1000);
+  const payload: JWTPayload = {
+    uuid: data.uuid,
+    username: data.name,
+    email: data.email,
+    exp: now + 60 * 60 * 24,
+  };
 
-//   const token = await CreateToken(payload);
+  const token = await CreateToken(payload);
 
-//   const user = {
-//     uuid: data.uuid,
-//     name: data.name,
-//     department_name: data.department_name,
-//     designation_name: data.designation_name,
-//   };
+  const user = {
+    uuid: data.uuid,
+    name: data.name,
+    email: data.email,
+    pass: data.pass,
+    status: data.status,
+  };
 
-//   const can_access = data.can_access;
-//   return c.json({ payload, token, can_access, user }, HSCode.OK);
-// };
+  return c.json({ payload, token, user }, HSCode.OK);
+};
 
 export const create: AppRouteHandler<CreateRoute> = async (c: any) => {
   const value = c.req.valid('json');
@@ -262,19 +257,19 @@ export const patchChangePassword: AppRouteHandler<PatchChangePasswordRoute> = as
 //   return c.json(createToast('update', data.name), HSCode.OK);
 // };
 
-// export const patchStatus: AppRouteHandler<PatchStatusRoute> = async (c: any) => {
-//   const { uuid } = c.req.valid('param');
-//   const { status } = await c.req.json();
+export const patchUserStatus: AppRouteHandler<PatchUserStatusRoute> = async (c: any) => {
+  const { uuid } = c.req.valid('param');
+  const { status } = await c.req.json();
 
-//   const [data] = await db.update(users)
-//     .set({ status })
-//     .where(eq(users.uuid, uuid))
-//     .returning({
-//       name: users.name,
-//     });
+  const [data] = await db.update(users)
+    .set({ status })
+    .where(eq(users.uuid, uuid))
+    .returning({
+      name: users.name,
+    });
 
-//   if (!data)
-//     return DataNotFound(c);
+  if (!data)
+    return DataNotFound(c);
 
-//   return c.json(createToast('update', data.name), HSCode.OK);
-// };
+  return c.json(createToast('update', data.name), HSCode.OK);
+};

@@ -2,11 +2,11 @@ import * as HSCode from 'stoker/http-status-codes';
 import { jsonContent, jsonContentRequired } from 'stoker/openapi/helpers';
 import { createErrorSchema } from 'stoker/openapi/schemas';
 
-import { notFoundSchema } from '@/lib/constants';
+import { notFoundSchema, unauthorizedSchema } from '@/lib/constants';
 import * as param from '@/lib/param';
 import { createRoute, z } from '@hono/zod-openapi';
 
-import { insertSchema, patchSchema, selectSchema } from '../users/utils';
+import { insertSchema, patchSchema, selectSchema, signinOutputSchema, signinSchema } from '../users/utils';
 
 const tags = ['hr.users'];
 
@@ -44,36 +44,36 @@ export const create = createRoute({
   },
 });
 
-// export const signin = createRoute({
-//   path: '/signin',
-//   method: 'post',
-//   request: {
-//     body: jsonContentRequired(
-//       signinSchema,
-//       'The user login',
-//     ),
-//   },
-//   tags,
-//   responses: {
-//     [HSCode.OK]: jsonContent(
-//       signinOutputSchema,
-//       'The logged user',
-//     ),
-//     [HSCode.NOT_FOUND]: jsonContent(
-//       notFoundSchema,
-//       'User not found',
-//     ),
-//     [HSCode.UNPROCESSABLE_ENTITY]: jsonContent(
-//       createErrorSchema(patchSchema)
-//         .or(createErrorSchema(param.uuid)),
-//       'The validation error(s)',
-//     ),
-//     [HSCode.UNAUTHORIZED]: jsonContent(
-//       unauthorizedSchema,
-//       'Wrong password',
-//     ),
-//   },
-// });
+export const userSignin = createRoute({
+  path: '/user-signin',
+  method: 'post',
+  request: {
+    body: jsonContentRequired(
+      signinSchema,
+      'The user login',
+    ),
+  },
+  tags,
+  responses: {
+    [HSCode.OK]: jsonContent(
+      signinOutputSchema,
+      'The logged user',
+    ),
+    [HSCode.NOT_FOUND]: jsonContent(
+      notFoundSchema,
+      'User not found',
+    ),
+    [HSCode.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(patchSchema)
+        .or(createErrorSchema(param.uuid)),
+      'The validation error(s)',
+    ),
+    [HSCode.UNAUTHORIZED]: jsonContent(
+      unauthorizedSchema,
+      'Wrong password',
+    ),
+  },
+});
 
 export const getOne = createRoute({
   path: '/hr/users/{uuid}',
@@ -164,27 +164,27 @@ export const patchChangePassword = createRoute({
 
 });
 
-// export const signout = createRoute({
-//   path: '/signout/{uuid}',
-//   method: 'delete',
-//   request: {
-//     params: param.uuid,
-//   },
-//   tags,
-//   responses: {
-//     [HSCode.NO_CONTENT]: {
-//       description: 'User Signout',
-//     },
-//     [HSCode.NOT_FOUND]: jsonContent(
-//       notFoundSchema,
-//       'User not found',
-//     ),
-//     [HSCode.UNPROCESSABLE_ENTITY]: jsonContent(
-//       createErrorSchema(param.uuid),
-//       'Invalid id error',
-//     ),
-//   },
-// });
+export const signout = createRoute({
+  path: '/signout/{uuid}',
+  method: 'delete',
+  request: {
+    params: param.uuid,
+  },
+  tags,
+  responses: {
+    [HSCode.NO_CONTENT]: {
+      description: 'User Signout',
+    },
+    [HSCode.NOT_FOUND]: jsonContent(
+      notFoundSchema,
+      'User not found',
+    ),
+    [HSCode.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(param.uuid),
+      'Invalid id error',
+    ),
+  },
+});
 
 // export const getCanAccess = createRoute({
 //   path: '/hr/users/can-access/{uuid}',
@@ -218,29 +218,29 @@ export const patchChangePassword = createRoute({
 //   },
 // });
 
-// export const patchStatus = createRoute({
-//   path: '/hr/users/status/{uuid}',
-//   method: 'patch',
-//   tags,
-//   request: {
-//     params: param.uuid,
-//   },
-//   responses: {
-//     [HSCode.OK]: jsonContent(
-//       z.array(selectSchema),
-//       'The valueLabel of user',
-//     ),
-//   },
-// });
+export const patchUserStatus = createRoute({
+  path: '/hr/user-status/{uuid}',
+  method: 'patch',
+  tags,
+  request: {
+    params: param.uuid,
+  },
+  responses: {
+    [HSCode.OK]: jsonContent(
+      z.array(selectSchema),
+      'The valueLabel of user',
+    ),
+  },
+});
 
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
-// export type SigninRoute = typeof signin;
+export type SigninRoute = typeof userSignin;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
 export type PatchChangePasswordRoute = typeof patchChangePassword;
-// export type SignoutRoute = typeof signout;
+export type SignoutRoute = typeof signout;
 // export type GetCanAccessRoute = typeof getCanAccess;
 // export type PatchCanAccessRoute = typeof patchCanAccess;
-// export type PatchStatusRoute = typeof patchStatus;
+export type PatchUserStatusRoute = typeof patchUserStatus;
