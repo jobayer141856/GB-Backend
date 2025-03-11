@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import * as HSCode from 'stoker/http-status-codes';
 
 import db from '@/db';
-import { ComparePass, CreateToken, HashPass } from '@/middlewares/auth';
+import { ComparePass, CreateToken } from '@/middlewares/auth';
 import { createToast, DataNotFound, ObjectNotFound } from '@/utils/return';
 
 import type {
@@ -34,6 +34,9 @@ export const signin: AppRouteHandler<SigninRoute> = async (c: any) => {
   const resultPromise = db.select({
     uuid: auth_user.uuid,
     user_uuid: auth_user.user_uuid,
+    name: users.name,
+    phone: users.phone,
+    gender: users.gender,
     email: users.email,
     pass: users.pass,
     can_access: auth_user.can_access,
@@ -41,9 +44,6 @@ export const signin: AppRouteHandler<SigninRoute> = async (c: any) => {
     created_at: auth_user.created_at,
     updated_at: auth_user.updated_at,
     remarks: auth_user.remarks,
-    name: users.name,
-    phone: users.phone,
-    gender: users.gender,
   })
     .from(users)
     .leftJoin(auth_user, eq(auth_user.user_uuid, users.uuid))
