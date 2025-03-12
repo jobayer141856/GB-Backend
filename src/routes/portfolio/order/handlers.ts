@@ -8,7 +8,7 @@ import db from '@/db';
 import * as hrSchema from '@/routes/hr/schema';
 import { createToast, DataNotFound, ObjectNotFound } from '@/utils/return';
 
-import type { CreateRoute, GetOneRoute, ListRoute, PatchRoute, RemoveRoute } from './routes';
+import type { CreateRoute, GetOneRoute, GetOrderRouteForUserUuid, ListRoute, PatchRoute, RemoveRoute } from './routes';
 
 import { order, order_product, product } from '../schema';
 
@@ -133,4 +133,52 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
     return DataNotFound(c);
 
   return c.json(data || {}, HSCode.OK);
+};
+
+export const getOrderRouteForUserUuid: AppRouteHandler<GetOrderRouteForUserUuid> = async (c: any) => {
+  const { user_uuid } = c.req.valid('param');
+
+  const resultPromise = db.select({
+    id: order.id,
+    uuid: order.uuid,
+    user_uuid: order.user_uuid,
+    user_name: hrSchema.users.name,
+    user_phone: hrSchema.users.phone,
+    user_email: hrSchema.users.email,
+    user_address: hrSchema.users.address,
+    delivery_address: order.delivery_address,
+    payment_method: order.payment_method,
+    status: order.status,
+    is_delivered: order.is_delivered,
+    created_by: order.created_by,
+    created_by_name: created_user.name,
+    created_at: order.created_at,
+    updated_at: order.updated_at,
+    remarks: order.remarks,
+    order_product: sql`
+    json_agg(json_build_object(
+      'uuid', order_product.uuid,
+      'product_uuid', order_product.product_uuid,
+      'product_name', product.name,
+      'quantity', order_product.quantity,
+      'price', order_product.price,
+      'is_vatable', order_product.is_vatable,
+      'created_at', order_product.created_at,
+      'updated_at', order_product.updated_at
+    ))`,
+  })
+    .from(order)
+    .leftJoin(hrSchema.users, eq(order.user_uuid, hrSchema.users.uuid))
+    .leftJoin(created_user, eq(created_user.uuid, order.created_by))
+    .leftJoin(order_product, eq(order_product.order_uuid, order.uuid))
+    .leftJoin(product, eq(order_product.product_uuid, product.uuid))
+    .where(eq(order.user_uuid, user_uuid))
+    .groupBy(order.id, order.uuid, hrSchema.users.name, created_user.name, hrSchema.users.phone, hrSchema.users.email, hrSchema.users.address);
+
+  const data = await resultPromise;
+
+  if (!data)
+    return DataNotFound(c);
+
+  return c.json(data || [], HSCode.OK);
 };
