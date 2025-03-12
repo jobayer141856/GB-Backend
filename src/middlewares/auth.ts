@@ -5,6 +5,9 @@ import { compareSync, hash } from 'bcrypt-ts';
 import { sign, verify } from 'hono/jwt';
 
 import env from '@/env';
+import { product_category, sales_point, shop } from '@/routes/portfolio/schema';
+
+import { product_sale_point, recipe, testimonial } from './../routes/portfolio/schema';
 
 export async function HashPass(password: string) {
   const hashPassword = await hash(password, env.SALT);
@@ -31,10 +34,20 @@ export function isPublicRoute(url: string, method: string) {
     { url: '/v1/signin', method: 'POST' },
     { url: '/v1/user-signin', method: 'POST' },
     { url: '/v1/hr/users', method: 'POST' },
-    // { url: '/v1/portfolio', method: 'GET' },
+    { url: '/v1/portfolio/testimonial', method: 'GET' },
+    { url: '/v1/portfolio/product-category', method: 'GET' },
+    { url: '/v1/portfolio/product-sub-category', method: 'GET' },
+    { url: '/v1/portfolio/product', method: 'GET' },
+    { url: '/v1/portfolio/shop', method: 'GET' },
+    { url: '/v1/portfolio/recipe', method: 'GET' },
+    { url: '/v1/portfolio/promo-banner', method: 'GET' },
+    { url: '/v1/portfolio/promo-banner-product', method: 'GET' },
+    { url: '/v1/portfolio/sales-point', method: 'GET' },
+    { url: '/v1/portfolio/product-sale-point', method: 'GET' },
     { url: '/v1/portfolio/online-admission', method: 'POST' },
     { url: '/v1/portfolio/contact-us', method: 'POST' },
     { url: '/v1/other/', method: 'GET' },
+
   ];
 
   return publicUrls.some(route => url.startsWith(route.url) && route.method === method);
