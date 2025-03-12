@@ -127,9 +127,7 @@ export const getOrderRouteForUserUuid = createRoute({
   path: '/portfolio/order-user/{user_uuid}',
   method: 'get',
   request: {
-    params: z.object({
-      user_uuid: z.string(),
-    }),
+    params: param.userUuid,
   },
   tags,
   responses: {
