@@ -200,7 +200,25 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
 
 export const patchChangePassword: AppRouteHandler<PatchChangePasswordRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
-  const { pass, updated_at } = await c.req.json();
+  const { current_pass, pass, updated_at } = await c.req.json();
+
+  const [check_data] = await db.select({
+    pass: users.pass,
+  })
+    .from(users)
+    .where(eq(users.uuid, uuid));
+
+  if (!check_data)
+    return DataNotFound(c);
+
+  const match = await ComparePass(current_pass, check_data.pass);
+
+  if (!match) {
+    return c.json(
+      { message: 'Invalid password' },
+      HSCode.UNAUTHORIZED,
+    );
+  }
 
   // if (Object.keys(updates).length === 0)
   //   return ObjectNotFound(c);
