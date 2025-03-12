@@ -28,6 +28,7 @@ export const userSignin: AppRouteHandler<SigninRoute> = async (c: any) => {
     return ObjectNotFound(c);
 
   const { email, pass } = await c.req.json();
+
   const resultPromise = db.select({
     email: users.email,
     pass: users.pass,
@@ -50,7 +51,8 @@ export const userSignin: AppRouteHandler<SigninRoute> = async (c: any) => {
     );
   }
 
-  const match = ComparePass(pass, data.pass);
+  const match = await ComparePass(pass, data.pass);
+
   if (!match) {
     return c.json({ message: 'Email/Password does not match' }, HSCode.UNAUTHORIZED);
   }
