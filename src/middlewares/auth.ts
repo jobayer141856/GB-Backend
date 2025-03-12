@@ -5,9 +5,6 @@ import { compareSync, hash } from 'bcrypt-ts';
 import { sign, verify } from 'hono/jwt';
 
 import env from '@/env';
-import { product_category, sales_point, shop } from '@/routes/portfolio/schema';
-
-import { product_sale_point, recipe, testimonial } from './../routes/portfolio/schema';
 
 export async function HashPass(password: string) {
   const hashPassword = await hash(password, env.SALT);
