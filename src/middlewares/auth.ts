@@ -31,7 +31,7 @@ export function isPublicRoute(url: string, method: string) {
     { url: '/v1/signin', method: 'POST' },
     { url: '/v1/user-signin', method: 'POST' },
     { url: '/v1/hr/users', method: 'POST' },
-    { url: '/v1/portfolio', method: 'GET' },
+    // { url: '/v1/portfolio', method: 'GET' },
     { url: '/v1/portfolio/online-admission', method: 'POST' },
     { url: '/v1/portfolio/contact-us', method: 'POST' },
     { url: '/v1/other/', method: 'GET' },
