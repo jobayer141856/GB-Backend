@@ -177,6 +177,7 @@ export const getOrderRouteForUserUuid: AppRouteHandler<GetOrderRouteForUserUuid>
     .leftJoin(order_product, eq(order_product.order_uuid, order.uuid))
     .leftJoin(product, eq(order_product.product_uuid, product.uuid))
     .where(eq(order.user_uuid, user_uuid))
+    .orderBy(desc(order.created_at))
     .groupBy(order.id, order.uuid, hrSchema.users.name, created_user.name, hrSchema.users.phone, hrSchema.users.email, hrSchema.users.address);
 
   const data = await resultPromise;
