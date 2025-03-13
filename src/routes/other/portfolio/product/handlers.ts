@@ -11,6 +11,7 @@ export const valueLabel: AppRouteHandler<ValueLabelRoute> = async (c: any) => {
   const resultPromise = db.select({
     value: product.uuid,
     label: product.name,
+    is_vatable: product.is_vatable,
   })
     .from(product);
 
