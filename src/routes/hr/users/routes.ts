@@ -107,6 +107,7 @@ export const patch = createRoute({
       patchSchema,
       'The user updates',
     ),
+
   },
   tags,
   responses: {
@@ -154,6 +155,9 @@ export const patchChangePassword = createRoute({
   tags,
   request: {
     params: param.uuid,
+    query: z.object({
+      admin: z.string().optional(),
+    }),
   },
   responses: {
     [HSCode.OK]: jsonContent(
