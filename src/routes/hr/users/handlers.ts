@@ -202,26 +202,28 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c: any) => {
 
 export const patchChangePassword: AppRouteHandler<PatchChangePasswordRoute> = async (c: any) => {
   const { uuid } = c.req.valid('param');
+  const { admin } = c.req.valid('query');
+
   const { current_pass, pass, updated_at } = await c.req.json();
+  if (!admin) {
+    const [check_data] = await db.select({
+      pass: users.pass,
+    })
+      .from(users)
+      .where(eq(users.uuid, uuid));
 
-  const [check_data] = await db.select({
-    pass: users.pass,
-  })
-    .from(users)
-    .where(eq(users.uuid, uuid));
+    if (!check_data)
+      return DataNotFound(c);
 
-  if (!check_data)
-    return DataNotFound(c);
+    const match = await ComparePass(current_pass, check_data.pass);
 
-  const match = await ComparePass(current_pass, check_data.pass);
-
-  if (!match) {
-    return c.json(
-      { message: 'Invalid password' },
-      HSCode.UNAUTHORIZED,
-    );
+    if (!match) {
+      return c.json(
+        { message: 'Invalid password' },
+        HSCode.UNAUTHORIZED,
+      );
+    }
   }
-
   // if (Object.keys(updates).length === 0)
   //   return ObjectNotFound(c);
 
