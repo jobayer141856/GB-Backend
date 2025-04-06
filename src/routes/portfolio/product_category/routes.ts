@@ -31,16 +31,16 @@ export const create = createRoute({
   path: '/portfolio/product-category',
   method: 'post',
   request: {
-      body: {
-        content: {
-          'multipart/form-data': {
-            schema: {
-              ...insertSchema,
-            },
+    body: {
+      content: {
+        'multipart/form-data': {
+          schema: {
+            ...insertSchema,
           },
         },
       },
     },
+  },
   tags,
   responses: {
     [HSCode.OK]: jsonContent(
@@ -82,16 +82,16 @@ export const patch = createRoute({
   method: 'patch',
   request: {
     params: param.uuid,
-   body: {
-        content: {
-          'multipart/form-data': {
-            schema: {
-              ...patchSchema,
-            },
+    body: {
+      content: {
+        'multipart/form-data': {
+          schema: {
+            ...patchSchema,
           },
         },
-
       },
+
+    },
   },
   tags,
   responses: {
