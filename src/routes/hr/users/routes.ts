@@ -103,16 +103,10 @@ export const patch = createRoute({
   method: 'patch',
   request: {
     params: param.uuid,
-    body: {
-      content: {
-        'multipart/form-data': {
-          schema: {
-            ...patchSchema,
-          },
-        },
-      },
-
-    },
+    body: jsonContentRequired(
+      patchSchema,
+      'The user updates',
+    ),
   },
   tags,
   responses: {
