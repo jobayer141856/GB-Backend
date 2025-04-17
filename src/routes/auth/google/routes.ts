@@ -1,9 +1,7 @@
 import * as HSCode from 'stoker/http-status-codes';
-import { jsonContent, jsonContentRequired } from 'stoker/openapi/helpers';
-import { createErrorSchema } from 'stoker/openapi/schemas';
+import { jsonContent } from 'stoker/openapi/helpers';
 
-import { notFoundSchema, unauthorizedSchema } from '@/lib/constants';
-import * as param from '@/lib/param';
+import { unauthorizedSchema } from '@/lib/constants';
 import { createRoute, z } from '@hono/zod-openapi';
 
 import { loginSchema } from '../google/utils';

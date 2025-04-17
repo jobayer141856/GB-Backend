@@ -6,15 +6,15 @@ import type { AppRouteHandler } from '@/lib/types';
 import type { JWTPayload } from 'hono/utils/jwt/types';
 
 import { eq } from 'drizzle-orm';
-import { Hono } from 'hono';
 import * as HSCode from 'stoker/http-status-codes';
 
 import db from '@/db';
 // import axios from 'axios';
 // import { serialize } from 'cookie';
 import env from '@/env';
-import { ComparePass, CreateToken } from '@/middlewares/auth';
-import { createToast, DataNotFound, ObjectNotFound } from '@/utils/return';
+import nanoid from '@/lib/nanoid';
+import { CreateToken } from '@/middlewares/auth';
+import { createToast } from '@/utils/return';
 
 import type {
   GoogleCallbackRoute,
@@ -192,15 +192,17 @@ export const googleCallback: AppRouteHandler<GoogleCallbackRoute> = async (c) =>
       where: eq(users.email, profile.email),
     });
 
+    const userData = {
+      uuid: nanoid(),
+      email: profile.email,
+      name: profile.name || profile.email.split('@')[0],
+      pass: 'google',
+      provider: 'google',
+      created_at: new Date().toISOString(),
+    };
+
     if (!user) {
-      [user] = await db.insert(users).values({
-        uuid: crypto.randomUUID(),
-        email: profile.email,
-        name: profile.name || profile.email.split('@')[0],
-        provider: 'google',
-        created_at: new Date(),
-        updated_at: new Date(),
-      }).returning();
+      [user] = await db.insert(users).values(userData).returning();
     }
 
     // Generate JWT

@@ -29,7 +29,7 @@ export const signinOutputSchema = z.object({
 export const insertSchema = createInsertSchema(
   users,
   {
-    uuid: schema => schema.uuid.length(21),
+    uuid: z.string().length(21),
     name: schema => schema.name.min(1).max(255),
     email: schema => schema.email.min(1),
     phone: schema => schema.phone.min(1).max(50).optional(),
