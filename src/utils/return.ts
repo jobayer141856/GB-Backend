@@ -1,5 +1,6 @@
 import type { Context } from 'hono';
 
+import { error } from 'node:console';
 import * as HSCode from 'stoker/http-status-codes';
 import * as HSPhrases from 'stoker/http-status-phrases';
 
@@ -24,7 +25,7 @@ export function ObjectNotFound(c: Context) {
   );
 }
 interface Toast {
-  type: 'create' | 'update' | 'delete';
+  type: 'create' | 'update' | 'delete' | 'error';
   message: string | number;
 }
 
@@ -53,6 +54,11 @@ export function createToast(toastType: Toast['type'], message: Toast['message'])
       return {
         toastType,
         message: `${message} deleted`,
+      };
+    case 'error':
+      return {
+        toastType,
+        message: `${message}`,
       };
   }
 }
