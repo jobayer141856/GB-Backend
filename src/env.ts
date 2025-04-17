@@ -22,6 +22,8 @@ const EnvSchema = z.object({
   // DATABASE_AUTH_TOKEN: z.string().optional(),
   PRIVATE_KEY: z.string(),
   SALT: z.coerce.number(),
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
 });
 
 export type env = z.infer<typeof EnvSchema>;
