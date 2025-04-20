@@ -146,8 +146,6 @@ export const googleCallback: AppRouteHandler<GoogleCallbackRoute> = async (c) =>
 
     const token = await CreateToken(payload);
 
-    console.log('Generated JWT:', token);
-
     return c.json({
       token,
       user: {
