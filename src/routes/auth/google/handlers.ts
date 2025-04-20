@@ -13,7 +13,7 @@ import db from '@/db';
 // import { serialize } from 'cookie';
 import env from '@/env';
 import nanoid from '@/lib/nanoid';
-import { CreateToken } from '@/middlewares/auth';
+import { CreateToken, HashPass } from '@/middlewares/auth';
 import { createToast } from '@/utils/return';
 
 import type {
@@ -25,21 +25,14 @@ import type {
 import { users } from './../../hr/schema';
 
 export const googleLogin: AppRouteHandler<GoogleLoginRoute> = async (c) => {
-  const redirectUri = `${env.SERVER_URL}/v1/auth/login/google/callback`;
+  // console.log('Google login handler called');
+  const redirectUri = `${env.SERVER_URL}/v1/auth/google/callback`;
+  // console.log('Redirect URI:', redirectUri);
   const scopes = [
     'openid',
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
   ];
-
-  // const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-  // url.searchParams.set('client_id', env.GOOGLE_CLIENT_ID);
-  // url.searchParams.set('redirect_uri', `${env.SERVER_URL}/v1/auth/google/callback`);
-  // url.searchParams.set('response_type', 'code');
-  // url.searchParams.set('scope', 'openid email profile');
-  // url.searchParams.set('prompt', 'consent');
-
-  // return c.redirect(url.toString());
 
   const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
   authUrl.searchParams.set('client_id', env.GOOGLE_CLIENT_ID);
@@ -49,81 +42,16 @@ export const googleLogin: AppRouteHandler<GoogleLoginRoute> = async (c) => {
   authUrl.searchParams.set('access_type', 'offline');
   authUrl.searchParams.set('prompt', 'select_account');
 
+  // console.log('Generated Google OAuth URL:', authUrl.toString());
+
   return c.redirect(authUrl.toString());
 };
 
 export const googleCallback: AppRouteHandler<GoogleCallbackRoute> = async (c) => {
-  // const code = c.req.query('code');
-  // if (!code) {
-  //   return DataNotFound(c);
-  // }
-
-  // const tokenUrl = 'https://oauth2.googleapis.com/token';
-  // const tokenParams = new URLSearchParams({
-  //   client_id: env.GOOGLE_CLIENT_ID,
-  //   client_secret: env.GOOGLE_CLIENT_SECRET,
-  //   redirect_uri: `${env.SERVER_URL}/v1/auth/google/callback`,
-  //   code: code as string,
-  //   grant_type: 'authorization_code',
-  // });
-
-  // const tokenResponse = await fetch(tokenUrl, {
-  //   method: 'POST',
-  //   body: tokenParams,
-  // });
-
-  // if (!tokenResponse.ok) {
-  //   return DataNotFound(c);
-  // }
-
-  // const tokenData = await tokenResponse.json();
-  // const accessToken = tokenData.access_token;
-
-  // // Fetch user info from Google
-  // const userInfoUrl = 'https://www.googleapis.com/oauth2/v3/userinfo';
-  // const userInfoResponse = await fetch(userInfoUrl, {
-  //   headers: {
-  //     Authorization: `Bearer ${accessToken}`,
-  //   },
-  // });
-
-  // if (!userInfoResponse.ok) {
-  //   return DataNotFound(c);
-  // }
-
-  // const userInfo = await userInfoResponse.json();
-  // const { email } = userInfo;
-
-  // // Check if the user exists in your database
-  // const existingUser = await db.query.users.findFirst({
-  //   where: eq(users.email, email),
-  // });
-
-  // if (!existingUser) {
-  // // Create a new user if not found
-  // //   existingUser = await db.insert(users).values({
-  // //     email,
-  // //     name,
-  // //     uuid: crypto.randomUUID(), // Generate a unique identifier for the user
-  // //     created_at: new Date(),
-  // //   }); // Return the newly created user
-  // // }
-  //   return DataNotFound(c);
-  // }
-
-  // // Create JWT token
-  // const payload: JWTPayload = {
-  //   uuid: existingUser.uuid,
-  //   username: existingUser.name,
-  //   email: existingUser.email,
-  //   exp: Math.floor(Date.now() / 1000) + (60 * 60), // Token expires in one hour
-  // };
-
-  // const token = CreateToken(payload);
-
-  // return c.json({ payload, token });
   const { code, error } = c.req.query();
-
+  // console.log('Google callback handler called');
+  // console.log('Authorization Code:', code);
+  // console.log('Error:', error);
   if (error) {
     return c.json(
       createToast('error', error),
@@ -201,6 +129,9 @@ export const googleCallback: AppRouteHandler<GoogleCallbackRoute> = async (c) =>
       created_at: new Date().toISOString(),
     };
 
+    // Hash password for Google login
+    userData.pass = await HashPass(userData.pass);
+
     if (!user) {
       [user] = await db.insert(users).values(userData).returning();
     }
@@ -213,7 +144,9 @@ export const googleCallback: AppRouteHandler<GoogleCallbackRoute> = async (c) =>
       exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour
     };
 
-    const token = CreateToken(payload);
+    const token = await CreateToken(payload);
+
+    console.log('Generated JWT:', token);
 
     return c.json({
       token,
